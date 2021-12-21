@@ -1,0 +1,113 @@
+/* ************************************************************************** */
+/*                                                                            */
+/*                                                        :::      ::::::::   */
+/*   get_next_line_bonus.c                              :+:      :+:    :+:   */
+/*                                                    +:+ +:+         +:+     */
+/*   By: zel-hach <marvin@42.fr>                    +#+  +:+       +#+        */
+/*                                                +#+#+#+#+#+   +#+           */
+/*   Created: 2021/12/21 17:30:22 by zel-hach          #+#    #+#             */
+/*   Updated: 2021/12/21 19:27:02 by zel-hach         ###   ########.fr       */
+/*                                                                            */
+/* ************************************************************************** */
+
+
+#include "get_next_line_bonus.h"
+
+char	*ft_get_line(char *save)
+{
+	int		i;
+	int		index;
+	char	*line;
+
+	i = 0;
+	if (ft_strlen(save) <= 0)
+		return (NULL);
+	index = ft_strchr (save);
+	if (index == -1)
+		return (ft_strdup(save));
+	line = malloc(sizeof(char) * index + 2);
+	if (!line)
+		return (NULL);
+	while (save[i] != '\n')
+	{
+		line[i] = save[i];
+		i++;
+	}
+	line[i] = '\n';
+	line[i + 1] = '\0';
+	return (line);
+}
+
+char	*ft_return_save(char *save)
+{
+	int		len;
+	int		index;
+	char	*temp;
+
+	len = ft_strlen(save);
+	index = ft_strchr(save);
+	if (!save)
+		return (NULL);
+	if (index != -1)
+	{
+		temp = ft_substr(save, (index + 1), (len - index - 1));
+		free (save);
+		return (temp);
+	}
+	free (save);
+	return (NULL);
+}
+
+char	*read_newline(int fd, char *buff, char *save)
+{
+	char	*temp;
+	int		j;
+
+	while (ft_strchr(save) == -1)
+	{
+		j = read(fd, buff, BUFFER_SIZE);
+		if (j > 0)
+		{
+			buff[j] = '\0';
+			temp = ft_strjoin(save, buff);
+			if (save)
+				free (save);
+			save = temp;
+		}
+		else
+			break ;
+	}
+	free (buff);
+	buff = NULL;
+	if (j == -1)
+		return (NULL);
+	return (save);
+}
+
+char	*get_next_line(int fd)
+{
+	char		*buff;
+	static char	*save[1024];
+	char		*line;
+
+	if (fd < 0 || BUFFER_SIZE <= 0)
+		return (NULL);
+	buff = malloc(sizeof(char) * BUFFER_SIZE + 1);
+	if (!buff)
+		return (NULL);
+	save[fd] = read_newline (fd, buff, save[fd]);
+	line = ft_get_line(save[fd]);
+	save[fd]= ft_return_save(save[fd]);
+	return (line);
+}
+
+/*#include <stdio.h>
+#include <fcntl.h>
+ int		main()
+{
+	int		fd;
+char	*ret;
+	fd = open("hello.txt", O_RDONLY);
+    ret = get_next_line(fd);
+ 	printf("%s", ret);
+}*/
